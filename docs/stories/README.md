@@ -30,10 +30,10 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 |----|-------|------|--------|
 | [E1-S1](./E1-S1-new-page-button.md) | Criar botão "+" para nova página | 2h | [x] |
 | [E1-S2](./E1-S2-redirect-last-page.md) | Redirect automático para última página | 3h | [x] |
-| [E1-S3](./E1-S3-tags-to-sidebar.md) | Mover Tags para Sidebar | 4h | [ ] |
-| [E1-S4](./E1-S4-collapse-suggestions.md) | Colapsar Related Suggestions | 2h | [ ] |
-| [E1-S5](./E1-S5-backlinks-to-sidebar.md) | Mover Backlinks para Sidebar | 4h | [ ] |
-| [E1-S6](./E1-S6-hide-ai-features.md) | Esconder AI features até configurar | 3h | [ ] |
+| [E1-S3](./E1-S3-tags-to-sidebar.md) | Mover Tags para Sidebar | 4h | [x] |
+| [E1-S4](./E1-S4-collapse-suggestions.md) | Colapsar Related Suggestions | 2h | [x] |
+| [E1-S5](./E1-S5-backlinks-to-sidebar.md) | Mover Backlinks para Sidebar | 4h | [x] |
+| [E1-S6](./E1-S6-hide-ai-features.md) | Esconder AI features até configurar | 3h | [x] |
 
 ### Epic 2: Performance & Otimização (P0)
 
@@ -74,11 +74,11 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 - [x] E2-S1: Lazy load Graph
 - [x] E2-S2: Lazy load Chat
 
-### Sprint 2 (Week 2) - Simplification
-- [ ] E1-S3: Tags para sidebar
-- [ ] E1-S4: Colapsar suggestions
-- [ ] E1-S5: Backlinks para sidebar
-- [ ] E1-S6: Esconder AI
+### Sprint 2 (Week 2) - Simplification ✅ COMPLETED
+- [x] E1-S3: Tags para sidebar
+- [x] E1-S4: Colapsar suggestions
+- [x] E1-S5: Backlinks para sidebar
+- [x] E1-S6: Esconder AI
 
 ### Sprint 3 (Week 3) - Performance
 - [ ] E2-S3: Web Worker graph

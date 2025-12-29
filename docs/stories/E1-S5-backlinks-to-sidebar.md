@@ -3,7 +3,7 @@
 **Epic:** E1 - Simplificação da UI
 **Priority:** P1
 **Estimate:** 4 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -15,11 +15,11 @@
 
 ## Acceptance Criteria
 
-- [ ] BacklinksPanel removido do PageEditor
-- [ ] Backlinks aparecem no sidebar na seção PAGE INFO
-- [ ] Mostrar como lista colapsável
-- [ ] Contador de backlinks visível mesmo colapsado
-- [ ] Click no backlink navega para página
+- [x] BacklinksPanel removido do PageEditor
+- [x] Backlinks aparecem no sidebar na seção PAGE INFO
+- [x] Mostrar como lista colapsável
+- [x] Contador de backlinks visível mesmo colapsado
+- [x] Click no backlink navega para página
 
 ## Technical Notes
 

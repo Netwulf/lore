@@ -3,7 +3,7 @@
 **Epic:** E1 - Simplificação da UI
 **Priority:** P1
 **Estimate:** 2 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -15,11 +15,11 @@
 
 ## Acceptance Criteria
 
-- [ ] RelatedSuggestionsPanel começa colapsado
-- [ ] Mostrar apenas header "Related (3)" com contador
-- [ ] Click no header expande/colapsa
-- [ ] Estado persistido em localStorage
-- [ ] Animação suave de expand/collapse
+- [x] RelatedSuggestionsPanel começa colapsado
+- [x] Mostrar apenas header "Related (3)" com contador
+- [x] Click no header expande/colapsa
+- [x] Estado persistido em localStorage
+- [x] Animação suave de expand/collapse
 
 ## Technical Notes
 

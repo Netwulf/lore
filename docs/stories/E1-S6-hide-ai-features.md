@@ -3,7 +3,7 @@
 **Epic:** E1 - Simplificação da UI
 **Priority:** P1
 **Estimate:** 3 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -15,11 +15,11 @@
 
 ## Acceptance Criteria
 
-- [ ] Botão "AI" no header só aparece se API key configurada
-- [ ] InlineAIToolbar só aparece se API key configurada
-- [ ] Tag suggestions só aparecem se API key configurada
-- [ ] Image generation só aparece se API key configurada
-- [ ] Semantic search degrada para text search silenciosamente
+- [x] Botão "AI" no header só aparece se API key configurada
+- [x] InlineAIToolbar só aparece se API key configurada
+- [x] Tag suggestions só aparecem se API key configurada (removed from editor)
+- [x] Image generation só aparece se API key configurada
+- [ ] Semantic search degrada para text search silenciosamente (future enhancement)
 
 ## Technical Notes
 

@@ -7,14 +7,12 @@ import { createClient } from '@/lib/supabase/client';
 import { usePages } from '@/lib/hooks/usePages';
 import { useLinks } from '@/lib/hooks/useLinks';
 import { useTextSelection } from '@/lib/hooks/useTextSelection';
+import { useAIEnabled } from '@/lib/hooks/useAIEnabled';
 import type { PartialBlock } from '@blocknote/core';
 import type { Json } from '@lore/db';
 import type { WikiPage } from '@lore/editor';
-import { BacklinksPanel } from './BacklinksPanel';
 import { RelatedSuggestionsPanel } from './RelatedSuggestionsPanel';
 import { InlineAIToolbar } from './InlineAIToolbar';
-import { PageTags } from './PageTags';
-import { TagSuggestionsPopup } from './TagSuggestionsPopup';
 import { ImageGenerationModal } from './ImageGenerationModal';
 
 // Dynamic import to avoid SSR issues with BlockNote
@@ -39,14 +37,13 @@ export function PageEditor({ pageId, initialContent, initialTitle = 'Untitled' }
   const [title, setTitle] = useState(initialTitle);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [userId, setUserId] = useState<string | null>(null);
-  const [pendingReplacement, setPendingReplacement] = useState<string | null>(null);
-  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [currentContent, setCurrentContent] = useState<PartialBlock[] | undefined>(initialContent);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
   const { pages, createPage } = usePages();
   const { syncLinks } = useLinks();
+  const { enabled: aiEnabled } = useAIEnabled();
 
   // Text selection for AI inline actions
   const { selection, clearSelection, hasSelection } = useTextSelection({
@@ -221,13 +218,7 @@ export function PageEditor({ pageId, initialContent, initialTitle = 'Untitled' }
         value={title}
         onChange={handleTitleChange}
         placeholder="Untitled"
-        className="w-full text-4xl font-display font-bold text-warm-ivory bg-transparent border-none outline-none placeholder:text-warm-ivory/30 mb-4"
-      />
-
-      {/* Tags */}
-      <PageTags
-        pageId={pageId}
-        onRequestSuggestions={() => setShowTagSuggestions(true)}
+        className="w-full text-4xl font-display font-bold text-warm-ivory bg-transparent border-none outline-none placeholder:text-warm-ivory/30 mb-6"
       />
 
       {/* Editor with AI Inline Actions */}
@@ -241,8 +232,8 @@ export function PageEditor({ pageId, initialContent, initialTitle = 'Untitled' }
           onImageCommand={() => setShowImageModal(true)}
         />
 
-        {/* AI Inline Actions Toolbar */}
-        {hasSelection && selection && (
+        {/* AI Inline Actions Toolbar - Only show if AI is enabled */}
+        {aiEnabled && hasSelection && selection && (
           <InlineAIToolbar
             selectedText={selection.text}
             position={selection.position}
@@ -254,18 +245,6 @@ export function PageEditor({ pageId, initialContent, initialTitle = 'Untitled' }
 
       {/* Related Suggestions Panel */}
       <RelatedSuggestionsPanel pageId={pageId} pageTitle={title} />
-
-      {/* Backlinks Panel */}
-      <BacklinksPanel pageId={pageId} pageTitle={title} />
-
-      {/* Tag Suggestions Popup */}
-      {showTagSuggestions && currentContent && (
-        <TagSuggestionsPopup
-          pageId={pageId}
-          content={currentContent}
-          onClose={() => setShowTagSuggestions(false)}
-        />
-      )}
 
       {/* Image Generation Modal */}
       {showImageModal && (

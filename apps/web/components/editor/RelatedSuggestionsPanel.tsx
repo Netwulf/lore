@@ -17,7 +17,13 @@ export function RelatedSuggestionsPanel({
 }: RelatedSuggestionsPanelProps) {
   const [suggestions, setSuggestions] = useState<SuggestedPage[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    // Collapsed by default, persist in localStorage
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lore-suggestions-expanded') === 'true';
+    }
+    return false;
+  });
   const [addingId, setAddingId] = useState<string | null>(null);
   const supabase = createClient();
   const { getSuggestions, dismissSuggestion, loading } = useSuggestions();
@@ -81,7 +87,11 @@ export function RelatedSuggestionsPanel({
     <div className="mt-8 pt-6 border-t border-warm-ivory/10">
       {/* Header */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => {
+          const newValue = !isExpanded;
+          setIsExpanded(newValue);
+          localStorage.setItem('lore-suggestions-expanded', String(newValue));
+        }}
         className="w-full flex items-center gap-2 text-left group"
       >
         <svg

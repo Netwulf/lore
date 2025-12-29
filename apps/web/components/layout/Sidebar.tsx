@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PageTree from './PageTree';
 import { TagsSidebar } from './TagsSidebar';
+import { PageInfoPanel } from './PageInfoPanel';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -82,14 +83,17 @@ export default function Sidebar({ isOpen, onClose, onCreatePage }: SidebarProps)
           </div>
         </div>
 
-        {/* Navigation with Page Tree and Tags */}
+        {/* Navigation with Page Tree, Page Info, and Tags */}
         <nav className="flex-1 overflow-y-auto p-2 flex flex-col">
           <PageTree />
+
+          {/* Page Info Section (Tags & Backlinks) */}
+          <PageInfoPanel />
 
           {/* Separator */}
           <div className="border-t border-warm-ivory/10 my-2" />
 
-          {/* Tags Section */}
+          {/* All Tags Section */}
           <TagsSidebar />
         </nav>
 

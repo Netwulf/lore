@@ -8,6 +8,7 @@ import Sidebar from './Sidebar';
 import CommandPalette from './CommandPalette';
 import LogoutButton from '@/components/LogoutButton';
 import { usePages } from '@/lib/hooks/usePages';
+import { useAIEnabled } from '@/lib/hooks/useAIEnabled';
 
 // Lazy load heavy components
 const GraphViewModal = dynamic(
@@ -44,6 +45,7 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
   const [graphOpen, setGraphOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const { pages, createPage } = usePages();
+  const { enabled: aiEnabled } = useAIEnabled();
   const router = useRouter();
 
   // Handle create page and navigate
@@ -99,31 +101,33 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
 
           {/* Right side */}
           <div className="flex items-center gap-4">
-            {/* AI Chat Button */}
-            <button
-              onClick={() => setChatOpen(!chatOpen)}
-              className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                chatOpen
-                  ? 'bg-tech-olive text-void-black'
-                  : 'text-warm-ivory/60 hover:text-warm-ivory hover:bg-warm-ivory/5'
-              }`}
-              title="AI Chat"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            {/* AI Chat Button - Only show if AI is enabled */}
+            {aiEnabled && (
+              <button
+                onClick={() => setChatOpen(!chatOpen)}
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
+                  chatOpen
+                    ? 'bg-tech-olive text-void-black'
+                    : 'text-warm-ivory/60 hover:text-warm-ivory hover:bg-warm-ivory/5'
+                }`}
+                title="AI Chat"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                />
-              </svg>
-              <span className="hidden sm:inline">AI</span>
-            </button>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                  />
+                </svg>
+                <span className="hidden sm:inline">AI</span>
+              </button>
+            )}
             {/* Graph View Button */}
             <button
               onClick={() => setGraphOpen(true)}
@@ -190,8 +194,10 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
       {/* Graph View Modal */}
       <GraphViewModal isOpen={graphOpen} onClose={() => setGraphOpen(false)} />
 
-      {/* AI Chat Sidebar */}
-      <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} />
+      {/* AI Chat Sidebar - Only render if AI is enabled */}
+      {aiEnabled && (
+        <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} />
+      )}
     </div>
   );
 }

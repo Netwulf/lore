@@ -3,7 +3,7 @@
 **Epic:** E1 - Simplificação da UI
 **Priority:** P1
 **Estimate:** 4 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -19,11 +19,11 @@ Atualmente as tags aparecem logo abaixo do título no editor, ocupando espaço v
 
 ## Acceptance Criteria
 
-- [ ] Tags removidas do PageEditor
-- [ ] Tags aparecem no sidebar quando página está selecionada
-- [ ] Seção "Page Info" no sidebar com tags e metadata
-- [ ] Editar tags continua funcional no sidebar
-- [ ] AI suggest tags funciona do sidebar
+- [x] Tags removidas do PageEditor
+- [x] Tags aparecem no sidebar quando página está selecionada
+- [x] Seção "Page Info" no sidebar com tags e metadata
+- [x] Editar tags continua funcional no sidebar
+- [ ] AI suggest tags funciona do sidebar (future enhancement)
 
 ## Technical Notes
 
