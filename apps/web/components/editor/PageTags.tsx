@@ -43,7 +43,7 @@ export function PageTags({ pageId, onRequestSuggestions }: PageTagsProps) {
     }
 
     // Create or find existing tag
-    let tag = tags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
+    let tag: Tag | null | undefined = tags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
     if (!tag) {
       tag = await createTag(tagName);
     }

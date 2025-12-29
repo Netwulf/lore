@@ -30,7 +30,7 @@ export function useTags() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data, error } = await supabase.rpc('get_tags_with_counts', {
+    const { data, error } = await (supabase as any).rpc('get_tags_with_counts', {
       p_user_id: user.id,
     });
 
@@ -49,7 +49,7 @@ export function useTags() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('tags')
       .insert({
         name: name.toLowerCase().trim(),
@@ -62,7 +62,7 @@ export function useTags() {
     if (error) {
       // Tag might already exist
       if (error.code === '23505') {
-        const { data: existingTag } = await supabase
+        const { data: existingTag } = await (supabase as any)
           .from('tags')
           .select('*')
           .eq('user_id', user.id)
@@ -80,7 +80,7 @@ export function useTags() {
 
   // Delete a tag
   const deleteTag = useCallback(async (tagId: string): Promise<boolean> => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('tags')
       .delete()
       .eq('id', tagId);
@@ -96,7 +96,7 @@ export function useTags() {
 
   // Add tag to page
   const addTagToPage = useCallback(async (pageId: string, tagId: string): Promise<boolean> => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('page_tags')
       .insert({ page_id: pageId, tag_id: tagId });
 
@@ -111,7 +111,7 @@ export function useTags() {
 
   // Remove tag from page
   const removeTagFromPage = useCallback(async (pageId: string, tagId: string): Promise<boolean> => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('page_tags')
       .delete()
       .eq('page_id', pageId)
@@ -128,7 +128,7 @@ export function useTags() {
 
   // Get tags for a specific page
   const getPageTags = useCallback(async (pageId: string): Promise<Tag[]> => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('page_tags')
       .select('tag_id, tags(id, name, color)')
       .eq('page_id', pageId);
@@ -172,7 +172,7 @@ export function useTags() {
 
     for (const suggestion of selectedTags) {
       // Create or get existing tag
-      let tag = tags.find(t => t.name === suggestion.name);
+      let tag: Tag | null | undefined = tags.find(t => t.name === suggestion.name);
       if (!tag) {
         tag = await createTag(suggestion.name);
       }
