@@ -1,0 +1,145 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import Sidebar from './Sidebar';
+import CommandPalette from './CommandPalette';
+import LogoutButton from '@/components/LogoutButton';
+import { usePages } from '@/lib/hooks/usePages';
+import GraphViewModal from '@/components/graph/GraphViewModal';
+import ChatSidebar from '@/components/chat/ChatSidebar';
+
+interface AppShellProps {
+  children: React.ReactNode;
+  userEmail?: string;
+}
+
+export default function AppShell({ children, userEmail }: AppShellProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [graphOpen, setGraphOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const { pages } = usePages();
+
+  return (
+    <div className="flex h-screen bg-void-black overflow-hidden">
+      {/* Command Palette (⌘K) */}
+      <CommandPalette pages={pages} />
+
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="flex items-center justify-between px-4 h-14 border-b border-warm-ivory/10 bg-void-black">
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden text-warm-ivory/60 hover:text-warm-ivory"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          {/* Desktop spacer */}
+          <div className="hidden md:block" />
+
+          {/* Right side */}
+          <div className="flex items-center gap-4">
+            {/* AI Chat Button */}
+            <button
+              onClick={() => setChatOpen(!chatOpen)}
+              className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
+                chatOpen
+                  ? 'bg-tech-olive text-void-black'
+                  : 'text-warm-ivory/60 hover:text-warm-ivory hover:bg-warm-ivory/5'
+              }`}
+              title="AI Chat"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                />
+              </svg>
+              <span className="hidden sm:inline">AI</span>
+            </button>
+            {/* Graph View Button */}
+            <button
+              onClick={() => setGraphOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-warm-ivory/60 hover:text-warm-ivory hover:bg-warm-ivory/5 rounded transition-colors"
+              title="Graph View"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                />
+              </svg>
+              <span className="hidden sm:inline">Graph</span>
+            </button>
+            {/* Settings Button */}
+            <Link
+              href="/settings"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-warm-ivory/60 hover:text-warm-ivory hover:bg-warm-ivory/5 rounded transition-colors"
+              title="Settings"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span className="hidden sm:inline">Settings</span>
+            </Link>
+            {userEmail && (
+              <span className="hidden sm:block text-warm-ivory/60 text-sm">
+                {userEmail}
+              </span>
+            )}
+            <LogoutButton />
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+      </div>
+
+      {/* Graph View Modal */}
+      <GraphViewModal isOpen={graphOpen} onClose={() => setGraphOpen(false)} />
+
+      {/* AI Chat Sidebar */}
+      <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} />
+    </div>
+  );
+}

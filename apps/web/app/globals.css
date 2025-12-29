@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ai.telier V2 - Brutalismo Poético Base Styles */
+:root {
+  /* Colors */
+  --void-black: #0A0A0A;
+  --warm-ivory: #F5F2EB;
+  --tech-olive: #8dc75e;
+  --twilight-violet: #261833;
+  --violet-mist: rgba(38, 24, 51, 0.3);
+  --violet-deep: #1A1025;
+  --violet-glow: #2E1A47;
+
+  /* Typography */
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+@layer base {
+  html {
+    @apply bg-void-black text-warm-ivory antialiased;
+  }
+
+  body {
+    @apply min-h-screen font-sans;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Headings use Space Grotesk */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+
+  /* Code blocks use IBM Plex Mono */
+  code, pre, kbd {
+    @apply font-mono;
+  }
+
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-void-black;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-twilight-violet rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-twilight-glow;
+  }
+}
+
+@layer components {
+  /* Ai.telier V2 Button Styles */
+  .btn-primary {
+    @apply bg-tech-olive text-void-black px-4 py-2 rounded-lg font-medium
+           hover:brightness-110 transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-twilight-violet text-warm-ivory px-4 py-2 rounded-lg font-medium
+           border border-primary hover:bg-twilight-glow transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply text-warm-ivory px-4 py-2 rounded-lg font-medium
+           hover:bg-twilight-mist transition-all duration-200;
+  }
+
+  /* Card component */
+  .card {
+    @apply bg-twilight-deep border border-primary rounded-xl p-4;
+  }
+
+  /* Input styles */
+  .input {
+    @apply bg-void-black border border-primary rounded-lg px-3 py-2 text-warm-ivory
+           placeholder:text-muted focus:border-tech-olive focus:outline-none
+           transition-colors duration-200;
+  }
+}
+
+@layer utilities {
+  /* Text gradient utility */
+  .text-gradient {
+    @apply bg-gradient-to-r from-tech-olive to-warm-ivory bg-clip-text text-transparent;
+  }
+
+  /* Glow effect */
+  .glow-olive {
+    box-shadow: 0 0 20px rgba(141, 199, 94, 0.3);
+  }
+
+  .glow-violet {
+    box-shadow: 0 0 20px rgba(46, 26, 71, 0.5);
+  }
+}
