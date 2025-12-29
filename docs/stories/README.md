@@ -28,8 +28,8 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 
 | ID | Story | Est. | Status |
 |----|-------|------|--------|
-| [E1-S1](./E1-S1-new-page-button.md) | Criar botão "+" para nova página | 2h | [ ] |
-| [E1-S2](./E1-S2-redirect-last-page.md) | Redirect automático para última página | 3h | [ ] |
+| [E1-S1](./E1-S1-new-page-button.md) | Criar botão "+" para nova página | 2h | [x] |
+| [E1-S2](./E1-S2-redirect-last-page.md) | Redirect automático para última página | 3h | [x] |
 | [E1-S3](./E1-S3-tags-to-sidebar.md) | Mover Tags para Sidebar | 4h | [ ] |
 | [E1-S4](./E1-S4-collapse-suggestions.md) | Colapsar Related Suggestions | 2h | [ ] |
 | [E1-S5](./E1-S5-backlinks-to-sidebar.md) | Mover Backlinks para Sidebar | 4h | [ ] |
@@ -39,8 +39,8 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 
 | ID | Story | Est. | Status |
 |----|-------|------|--------|
-| [E2-S1](./E2-S1-lazy-load-graph.md) | Lazy load GraphViewModal | 4h | [ ] |
-| [E2-S2](./E2-S2-lazy-load-chat.md) | Lazy load ChatSidebar | 3h | [ ] |
+| [E2-S1](./E2-S1-lazy-load-graph.md) | Lazy load GraphViewModal | 4h | [x] |
+| [E2-S2](./E2-S2-lazy-load-chat.md) | Lazy load ChatSidebar | 3h | [x] |
 | [E2-S3](./E2-S3-graph-web-worker.md) | Graph layout em Web Worker | 8h | [ ] |
 | [E2-S4](./E2-S4-singleton-supabase.md) | Singleton Supabase client | 4h | [ ] |
 | [E2-S5](./E2-S5-optimize-command-palette.md) | Otimizar CommandPalette debounce | 3h | [ ] |
@@ -68,11 +68,11 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 
 ## Sprint Planning (Suggestion)
 
-### Sprint 1 (Week 1) - Critical Path
-- [ ] E1-S1: Botão nova página
-- [ ] E1-S2: Redirect última página
-- [ ] E2-S1: Lazy load Graph
-- [ ] E2-S2: Lazy load Chat
+### Sprint 1 (Week 1) - Critical Path ✅ COMPLETED
+- [x] E1-S1: Botão nova página
+- [x] E1-S2: Redirect última página
+- [x] E2-S1: Lazy load Graph
+- [x] E2-S2: Lazy load Chat
 
 ### Sprint 2 (Week 2) - Simplification
 - [ ] E1-S3: Tags para sidebar

@@ -3,7 +3,7 @@
 **Epic:** E2 - Performance & Otimização
 **Priority:** P0
 **Estimate:** 4 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -19,11 +19,11 @@ O `reactflow` é uma dependência pesada (~200KB). Atualmente é importado mesmo
 
 ## Acceptance Criteria
 
-- [ ] GraphViewModal usa dynamic import
-- [ ] Loading spinner enquanto carrega o módulo
-- [ ] Reactflow só incluído no bundle quando modal abre
-- [ ] Sem flash ou layout shift ao abrir
-- [ ] Tempo de abertura do modal < 1s
+- [x] GraphViewModal usa dynamic import
+- [x] Loading spinner enquanto carrega o módulo
+- [x] Reactflow só incluído no bundle quando modal abre
+- [x] Sem flash ou layout shift ao abrir
+- [x] Tempo de abertura do modal < 1s
 
 ## Technical Notes
 

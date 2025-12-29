@@ -3,7 +3,7 @@
 **Epic:** E2 - Performance & Otimização
 **Priority:** P0
 **Estimate:** 3 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -15,10 +15,10 @@
 
 ## Acceptance Criteria
 
-- [ ] ChatSidebar usa dynamic import
-- [ ] Loading indicator enquanto carrega
-- [ ] Componente só renderiza quando isOpen=true
-- [ ] Sem re-mount ao abrir/fechar (preservar histórico)
+- [x] ChatSidebar usa dynamic import
+- [x] Loading indicator enquanto carrega
+- [x] Componente só renderiza quando isOpen=true
+- [x] Sem re-mount ao abrir/fechar (preservar histórico)
 
 ## Technical Notes
 

@@ -2,15 +2,19 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import PageTree from './PageTree';
 import { TagsSidebar } from './TagsSidebar';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  onCreatePage?: () => Promise<{ id: string } | null>;
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose, onCreatePage }: SidebarProps) {
+  const router = useRouter();
+
   // Close sidebar on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -19,6 +23,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+
+  const handleCreatePage = async () => {
+    if (!onCreatePage) return;
+    const newPage = await onCreatePage();
+    if (newPage) {
+      router.push(`/page/${newPage.id}`);
+    }
+  };
 
   return (
     <>
@@ -47,14 +59,27 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               Lore
             </span>
           </Link>
-          <button
-            onClick={onClose}
-            className="md:hidden text-warm-ivory/60 hover:text-warm-ivory"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-1">
+            {/* New Page Button */}
+            <button
+              onClick={handleCreatePage}
+              className="p-1.5 hover:bg-warm-ivory/10 rounded transition-colors"
+              title="New page (⌘N)"
+            >
+              <svg className="w-4 h-4 text-warm-ivory/60 hover:text-warm-ivory" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+            {/* Close Button (mobile) */}
+            <button
+              onClick={onClose}
+              className="md:hidden p-1.5 text-warm-ivory/60 hover:text-warm-ivory"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Navigation with Page Tree and Tags */}

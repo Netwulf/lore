@@ -3,7 +3,7 @@
 **Epic:** E1 - Simplificação da UI
 **Priority:** P0
 **Estimate:** 2 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -23,11 +23,11 @@ Obsidian e Notion têm botão "+" sempre visível.
 
 ## Acceptance Criteria
 
-- [ ] Botão "+" visível no topo do Sidebar (ao lado do título "Lore")
-- [ ] Ao clicar, cria página "Untitled" e navega para ela
-- [ ] Nova página é filha do root (sem parent)
-- [ ] Foco automático no título após criar
-- [ ] Atalho ⌘N também funciona
+- [x] Botão "+" visível no topo do Sidebar (ao lado do título "Lore")
+- [x] Ao clicar, cria página "Untitled" e navega para ela
+- [x] Nova página é filha do root (sem parent)
+- [x] Foco automático no título após criar
+- [x] Atalho ⌘N também funciona
 
 ## Technical Notes
 

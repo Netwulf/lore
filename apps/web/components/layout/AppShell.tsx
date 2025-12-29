@@ -1,13 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
 import CommandPalette from './CommandPalette';
 import LogoutButton from '@/components/LogoutButton';
 import { usePages } from '@/lib/hooks/usePages';
-import GraphViewModal from '@/components/graph/GraphViewModal';
-import ChatSidebar from '@/components/chat/ChatSidebar';
+
+// Lazy load heavy components
+const GraphViewModal = dynamic(
+  () => import('@/components/graph/GraphViewModal'),
+  {
+    loading: () => (
+      <div className="fixed inset-0 z-50 bg-void-black flex items-center justify-center">
+        <div className="text-warm-ivory/40">Loading graph...</div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const ChatSidebar = dynamic(
+  () => import('@/components/chat/ChatSidebar'),
+  {
+    loading: () => (
+      <div className="fixed right-0 top-0 bottom-0 w-96 bg-void-black border-l border-warm-ivory/10 flex items-center justify-center z-40">
+        <div className="text-warm-ivory/40">Loading chat...</div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -18,7 +43,30 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [graphOpen, setGraphOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const { pages } = usePages();
+  const { pages, createPage } = usePages();
+  const router = useRouter();
+
+  // Handle create page and navigate
+  const handleCreatePage = useCallback(async () => {
+    const newPage = await createPage();
+    if (newPage) {
+      router.push(`/page/${newPage.id}`);
+    }
+    return newPage;
+  }, [createPage, router]);
+
+  // Keyboard shortcut: ⌘N for new page
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+        e.preventDefault();
+        handleCreatePage();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleCreatePage]);
 
   return (
     <div className="flex h-screen bg-void-black overflow-hidden">
@@ -26,7 +74,11 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
       <CommandPalette pages={pages} />
 
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onCreatePage={handleCreatePage}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">

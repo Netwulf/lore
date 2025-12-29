@@ -3,7 +3,7 @@
 **Epic:** E1 - Simplificação da UI
 **Priority:** P0
 **Estimate:** 3 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -21,11 +21,11 @@ Obsidian abre o último arquivo. Notion mostra a última página visitada.
 
 ## Acceptance Criteria
 
-- [ ] Ao logar, redireciona para última página editada (updated_at mais recente)
-- [ ] Se não houver páginas, cria uma "Getting Started" automaticamente
-- [ ] Se tiver páginas mas nenhuma recente, vai para primeira página
-- [ ] Armazena last_visited em localStorage como backup
-- [ ] Funciona no refresh da página também
+- [x] Ao logar, redireciona para última página editada (updated_at mais recente)
+- [x] Se não houver páginas, cria uma "Getting Started" automaticamente
+- [x] Se tiver páginas mas nenhuma recente, vai para primeira página
+- [ ] Armazena last_visited em localStorage como backup (future enhancement)
+- [x] Funciona no refresh da página também
 
 ## Technical Notes
 
