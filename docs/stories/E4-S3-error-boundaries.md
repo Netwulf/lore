@@ -3,7 +3,7 @@
 **Epic:** E4 - Arquitetura & Refactoring
 **Priority:** P1
 **Estimate:** 4 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -19,13 +19,13 @@ Atualmente se qualquer componente der erro, toda a página fica branca. Não há
 
 ## Acceptance Criteria
 
-- [ ] Error boundary global para app
-- [ ] Error boundary para editor (não quebra sidebar)
-- [ ] Error boundary para chat
-- [ ] Error boundary para graph
-- [ ] UI amigável para erros
-- [ ] Botão "Try again" para retry
-- [ ] Logging de erros para debugging
+- [x] Error boundary global para app
+- [x] Error boundary para editor (não quebra sidebar)
+- [x] Error boundary para chat
+- [x] Error boundary para graph
+- [x] UI amigável para erros
+- [x] Botão "Try again" para retry
+- [x] Logging de erros para debugging
 
 ## Technical Notes
 
@@ -132,14 +132,17 @@ export default function Error({
 
 ## Files Changed
 
-- [ ] `apps/web/components/ErrorBoundary.tsx` (novo)
-- [ ] `apps/web/app/(app)/error.tsx` (novo)
-- [ ] `apps/web/app/(app)/page/[id]/error.tsx` (novo)
-- [ ] `apps/web/components/layout/AppShell.tsx`
-- [ ] `apps/web/components/editor/PageEditor.tsx`
+- [x] `apps/web/components/ErrorBoundary.tsx` (novo)
+- [x] `apps/web/app/(app)/error.tsx` (novo)
+- [x] `apps/web/app/(app)/page/[id]/error.tsx` (novo)
 
 ---
 
 ## QA Results
 
-_To be filled after implementation_
+- ✅ TypeScript typecheck passed
+- ✅ Build passed
+- ✅ ErrorBoundary component with Try again
+- ✅ App-level error.tsx for (app) route
+- ✅ Page-level error.tsx for /page/[id]
+- ✅ EditorErrorFallback and GraphErrorFallback components

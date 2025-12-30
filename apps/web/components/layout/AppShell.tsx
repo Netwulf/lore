@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
 import CommandPalette from './CommandPalette';
+import { KeyboardShortcutsModal, useKeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import LogoutButton from '@/components/LogoutButton';
 import { usePages } from '@/lib/hooks/usePages';
 import { useAIEnabled } from '@/lib/hooks/useAIEnabled';
@@ -47,6 +48,7 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
   const { pages, createPage } = usePages();
   const { enabled: aiEnabled } = useAIEnabled();
   const router = useRouter();
+  const { isOpen: shortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsModal();
 
   // Handle create page and navigate
   const handleCreatePage = useCallback(async () => {
@@ -198,6 +200,9 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
       {aiEnabled && (
         <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} />
       )}
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal isOpen={shortcutsOpen} onClose={closeShortcuts} />
     </div>
   );
 }

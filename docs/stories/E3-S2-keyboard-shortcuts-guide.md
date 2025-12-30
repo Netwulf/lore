@@ -3,7 +3,7 @@
 **Epic:** E3 - UX Polish & Navegação
 **Priority:** P1
 **Estimate:** 3 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -15,11 +15,11 @@
 
 ## Acceptance Criteria
 
-- [ ] ⌘/ ou Ctrl+/ abre modal de atalhos
-- [ ] Lista todos os atalhos organizados por categoria
-- [ ] Design limpo e fácil de escanear
-- [ ] Fechar com Escape ou click fora
-- [ ] Dica sutil no rodapé "Press ⌘/ for shortcuts"
+- [x] ⌘/ ou Ctrl+/ abre modal de atalhos
+- [x] Lista todos os atalhos organizados por categoria
+- [x] Design limpo e fácil de escanear
+- [x] Fechar com Escape ou click fora
+- [x] Dica sutil no rodapé "Press ⌘/ for shortcuts"
 
 ## Technical Notes
 
@@ -74,12 +74,16 @@ Adicionar em AppShell ou Sidebar footer:
 
 ## Files Changed
 
-- [ ] `apps/web/components/KeyboardShortcutsModal.tsx` (novo)
-- [ ] `apps/web/components/layout/AppShell.tsx`
-- [ ] `apps/web/components/layout/Sidebar.tsx`
+- [x] `apps/web/components/layout/KeyboardShortcutsModal.tsx` (novo)
+- [x] `apps/web/components/layout/AppShell.tsx`
+- [x] `apps/web/components/layout/Sidebar.tsx`
 
 ---
 
 ## QA Results
 
-_To be filled after implementation_
+- ✅ TypeScript typecheck passed
+- ✅ ⌘/ opens modal (toggle on/off)
+- ✅ Categories: Navigation, Editor, AI Features
+- ✅ Escape and backdrop click close modal
+- ✅ Sidebar footer hint added

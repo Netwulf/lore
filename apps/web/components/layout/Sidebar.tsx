@@ -98,7 +98,7 @@ export default function Sidebar({ isOpen, onClose, onCreatePage }: SidebarProps)
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-warm-ivory/10">
+        <div className="p-4 border-t border-warm-ivory/10 space-y-2">
           <Link
             href="/settings"
             className="flex items-center gap-2 px-3 py-2 text-sm text-warm-ivory/60 hover:text-warm-ivory hover:bg-warm-ivory/5 transition-colors rounded"
@@ -109,6 +109,9 @@ export default function Sidebar({ isOpen, onClose, onCreatePage }: SidebarProps)
             </svg>
             Settings
           </Link>
+          <p className="text-xs text-warm-ivory/30 text-center">
+            Press <kbd className="px-1 py-0.5 bg-warm-ivory/5 rounded">⌘/</kbd> for shortcuts
+          </p>
         </div>
       </aside>
     </>

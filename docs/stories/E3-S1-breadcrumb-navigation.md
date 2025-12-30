@@ -3,7 +3,7 @@
 **Epic:** E3 - UX Polish & Navegação
 **Priority:** P1
 **Estimate:** 4 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -15,11 +15,11 @@
 
 ## Acceptance Criteria
 
-- [ ] Breadcrumb aparece acima do título da página
-- [ ] Mostra path completo: Home > Parent > Current
-- [ ] Cada item é clicável e navega
-- [ ] Truncar com "..." se muito longo
-- [ ] Animação suave ao mudar de página
+- [x] Breadcrumb aparece acima do título da página
+- [x] Mostra path completo: Home > Parent > Current
+- [x] Cada item é clicável e navega
+- [x] Truncar com "..." se muito longo
+- [x] Animação suave ao mudar de página
 
 ## Technical Notes
 
@@ -87,11 +87,15 @@ export function Breadcrumb({ pageId, pages }: BreadcrumbProps) {
 
 ## Files Changed
 
-- [ ] `apps/web/components/editor/Breadcrumb.tsx` (novo)
-- [ ] `apps/web/components/editor/PageEditor.tsx`
+- [x] `apps/web/components/editor/Breadcrumb.tsx` (novo)
+- [x] `apps/web/components/editor/PageEditor.tsx`
 
 ---
 
 ## QA Results
 
-_To be filled after implementation_
+- ✅ TypeScript typecheck passed
+- ✅ Home icon links to dashboard
+- ✅ Truncation with "..." for paths > 4 items
+- ✅ Current page shown without link
+- ✅ Hidden for root pages (no parent)

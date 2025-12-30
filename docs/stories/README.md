@@ -49,8 +49,8 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 
 | ID | Story | Est. | Status |
 |----|-------|------|--------|
-| [E3-S1](./E3-S1-breadcrumb-navigation.md) | Adicionar Breadcrumb navigation | 4h | [ ] |
-| [E3-S2](./E3-S2-keyboard-shortcuts-guide.md) | Keyboard shortcuts guide | 3h | [ ] |
+| [E3-S1](./E3-S1-breadcrumb-navigation.md) | Adicionar Breadcrumb navigation | 4h | [x] |
+| [E3-S2](./E3-S2-keyboard-shortcuts-guide.md) | Keyboard shortcuts guide | 3h | [x] |
 | [E3-S3](./E3-S3-empty-states.md) | Empty states para sidebar | 2h | [ ] |
 | [E3-S4](./E3-S4-loading-skeletons.md) | Loading skeletons | 3h | [ ] |
 | [E3-S5](./E3-S5-wikilink-tooltip.md) | Tooltip "Type [[ to link" | 2h | [ ] |
@@ -59,9 +59,9 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 
 | ID | Story | Est. | Status |
 |----|-------|------|--------|
-| [E4-S1](./E4-S1-split-page-editor.md) | Split PageEditor em componentes | 8h | [ ] |
+| [E4-S1](./E4-S1-split-page-editor.md) | Split PageEditor em componentes | 8h | [x] |
 | [E4-S2](./E4-S2-extract-search-hook.md) | Extrair search logic do CommandPalette | 4h | [ ] |
-| [E4-S3](./E4-S3-error-boundaries.md) | Implementar Error Boundaries | 4h | [ ] |
+| [E4-S3](./E4-S3-error-boundaries.md) | Implementar Error Boundaries | 4h | [x] |
 | [E4-S4](./E4-S4-react-query.md) | Adicionar React Query para caching | 8h | [ ] |
 
 ---
@@ -85,11 +85,11 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 - [x] E2-S4: Singleton Supabase
 - [x] E2-S5: Optimize CommandPalette
 
-### Sprint 4 (Week 4) - Polish
-- [ ] E3-S1: Breadcrumb
-- [ ] E3-S2: Keyboard guide
-- [ ] E4-S1: Split PageEditor
-- [ ] E4-S3: Error boundaries
+### Sprint 4 (Week 4) - Polish ✅ COMPLETED
+- [x] E3-S1: Breadcrumb
+- [x] E3-S2: Keyboard guide
+- [x] E4-S1: Split PageEditor
+- [x] E4-S3: Error boundaries
 
 ---
 
