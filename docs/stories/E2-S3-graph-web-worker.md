@@ -3,7 +3,7 @@
 **Epic:** E2 - Performance & Otimização
 **Priority:** P0
 **Estimate:** 8 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -26,11 +26,11 @@ for (let i = 0; i < 300; i++) {
 
 ## Acceptance Criteria
 
-- [ ] Cálculo de layout roda em Web Worker
-- [ ] UI permanece responsiva durante cálculo
-- [ ] Progress indicator durante cálculo
-- [ ] Resultado transferido via postMessage
-- [ ] Fallback para sync se Worker indisponível
+- [x] Cálculo de layout roda em Web Worker
+- [x] UI permanece responsiva durante cálculo
+- [x] Progress indicator durante cálculo
+- [x] Resultado transferido via postMessage
+- [x] Fallback para sync se Worker indisponível
 
 ## Technical Notes
 
@@ -135,13 +135,18 @@ module.exports = {
 
 ## Files Changed
 
-- [ ] `apps/web/components/graph/graphWorker.ts` (novo)
-- [ ] `apps/web/components/graph/useGraphLayout.ts` (novo)
-- [ ] `apps/web/components/graph/GraphViewContent.tsx`
-- [ ] `apps/web/next.config.js`
+- [x] `apps/web/components/graph/graphWorker.ts` (novo)
+- [x] `apps/web/components/graph/useGraphLayout.ts` (novo)
+- [x] `apps/web/components/graph/GraphViewModal.tsx` (refatorado)
+- [ ] ~~`apps/web/next.config.js`~~ (não necessário - Next.js 14 suporta Workers nativamente)
 
 ---
 
 ## QA Results
 
-_To be filled after implementation_
+- ✅ Build passed
+- ✅ TypeScript typecheck passed
+- ✅ Web Worker created with progress reporting (every 10%)
+- ✅ Hook with fallback for unsupported environments
+- ✅ Progress indicator in UI during calculation
+- ✅ Main thread unblocked during d3-force simulation

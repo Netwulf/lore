@@ -41,9 +41,9 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 |----|-------|------|--------|
 | [E2-S1](./E2-S1-lazy-load-graph.md) | Lazy load GraphViewModal | 4h | [x] |
 | [E2-S2](./E2-S2-lazy-load-chat.md) | Lazy load ChatSidebar | 3h | [x] |
-| [E2-S3](./E2-S3-graph-web-worker.md) | Graph layout em Web Worker | 8h | [ ] |
-| [E2-S4](./E2-S4-singleton-supabase.md) | Singleton Supabase client | 4h | [ ] |
-| [E2-S5](./E2-S5-optimize-command-palette.md) | Otimizar CommandPalette debounce | 3h | [ ] |
+| [E2-S3](./E2-S3-graph-web-worker.md) | Graph layout em Web Worker | 8h | [x] |
+| [E2-S4](./E2-S4-singleton-supabase.md) | Singleton Supabase client | 4h | [x] |
+| [E2-S5](./E2-S5-optimize-command-palette.md) | Otimizar CommandPalette debounce | 3h | [x] |
 
 ### Epic 3: UX Polish & Navegação (P1)
 
@@ -80,10 +80,10 @@ Este diretório contém as stories de refatoração do Lore para transformá-lo 
 - [x] E1-S5: Backlinks para sidebar
 - [x] E1-S6: Esconder AI
 
-### Sprint 3 (Week 3) - Performance
-- [ ] E2-S3: Web Worker graph
-- [ ] E2-S4: Singleton Supabase
-- [ ] E2-S5: Optimize CommandPalette
+### Sprint 3 (Week 3) - Performance ✅ COMPLETED
+- [x] E2-S3: Web Worker graph
+- [x] E2-S4: Singleton Supabase
+- [x] E2-S5: Optimize CommandPalette
 
 ### Sprint 4 (Week 4) - Polish
 - [ ] E3-S1: Breadcrumb

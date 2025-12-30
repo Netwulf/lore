@@ -14,16 +14,8 @@ import ReactFlow, {
   ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import {
-  forceSimulation,
-  forceLink,
-  forceManyBody,
-  forceCenter,
-  forceCollide,
-  SimulationNodeDatum,
-  SimulationLinkDatum,
-} from 'd3-force';
 import { useGraph, type GraphData, type GraphNode, type GraphEdge } from '@/lib/hooks/useGraph';
+import { useGraphLayout } from './useGraphLayout';
 
 interface GraphViewModalProps {
   isOpen: boolean;
@@ -32,69 +24,6 @@ interface GraphViewModalProps {
 }
 
 type DepthFilter = 1 | 2 | 3 | 'all';
-
-interface SimNode extends SimulationNodeDatum {
-  id: string;
-  title: string;
-}
-
-interface SimLink extends SimulationLinkDatum<SimNode> {
-  source: string | SimNode;
-  target: string | SimNode;
-}
-
-/**
- * Calculate node positions using d3-force simulation
- */
-function calculateForceLayout(
-  graphNodes: GraphNode[],
-  graphEdges: GraphEdge[],
-  width: number = 800,
-  height: number = 600
-): Node[] {
-  if (graphNodes.length === 0) return [];
-
-  const simNodes: SimNode[] = graphNodes.map((n) => ({
-    id: n.id,
-    title: n.title,
-    x: width / 2 + (Math.random() - 0.5) * 200,
-    y: height / 2 + (Math.random() - 0.5) * 200,
-  }));
-
-  const simLinks: SimLink[] = graphEdges.map((e) => ({
-    source: e.source_id,
-    target: e.target_id,
-  }));
-
-  const simulation = forceSimulation<SimNode>(simNodes)
-    .force(
-      'link',
-      forceLink<SimNode, SimLink>(simLinks)
-        .id((d) => d.id)
-        .distance(120)
-    )
-    .force('charge', forceManyBody().strength(-300))
-    .force('center', forceCenter(width / 2, height / 2))
-    .force('collide', forceCollide().radius(60));
-
-  // Run simulation synchronously
-  for (let i = 0; i < 300; i++) {
-    simulation.tick();
-  }
-  simulation.stop();
-
-  return simNodes.map((node) => ({
-    id: node.id,
-    type: 'default',
-    data: { label: node.title },
-    position: {
-      x: node.x || 0,
-      y: node.y || 0,
-    },
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
-  }));
-}
 
 /**
  * Filter nodes and edges by depth from a center node
@@ -173,15 +102,14 @@ export function GraphViewModal({
     loadGraph();
   }, [isOpen, hasLoaded, fetchGraphData]);
 
-  // Apply filters and calculate layout
-  useEffect(() => {
-    if (!hasLoaded || graphData.nodes.length === 0) return;
+  // Apply depth filter
+  const filteredData = useMemo(() => {
+    if (!hasLoaded || graphData.nodes.length === 0) {
+      return { nodes: [], edges: [] };
+    }
 
-    let filteredData = graphData;
-
-    // Apply depth filter if we have a current page
     if (depthFilter !== 'all' && currentPageId) {
-      filteredData = filterByDepth(
+      return filterByDepth(
         graphData.nodes,
         graphData.edges,
         currentPageId,
@@ -189,11 +117,22 @@ export function GraphViewModal({
       );
     }
 
-    // Calculate force-directed layout
-    const layoutNodes = calculateForceLayout(
-      filteredData.nodes,
-      filteredData.edges
-    );
+    return graphData;
+  }, [hasLoaded, graphData, depthFilter, currentPageId]);
+
+  // Calculate layout using Web Worker
+  const { layout, progress, isCalculating } = useGraphLayout(
+    filteredData.nodes,
+    filteredData.edges
+  );
+
+  // Apply styling when layout is ready
+  useEffect(() => {
+    if (!layout || layout.nodes.length === 0) {
+      setNodes([]);
+      setEdges([]);
+      return;
+    }
 
     // Find search match
     const searchMatch = searchQuery.trim()
@@ -215,7 +154,7 @@ export function GraphViewModal({
       : null;
 
     // Style nodes
-    const styledNodes = layoutNodes.map((node) => {
+    const styledNodes = layout.nodes.map((node) => {
       const isCurrent = node.id === currentPageId;
       const isSearchMatch = node.id === searchMatch;
       const isHovered = node.id === hoveredNode;
@@ -223,7 +162,12 @@ export function GraphViewModal({
       const isDimmed = connectedIds && !isConnected;
 
       return {
-        ...node,
+        id: node.id,
+        type: 'default',
+        data: { label: node.title },
+        position: { x: node.x, y: node.y },
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
         style: {
           background: isCurrent
             ? '#8dc75e'
@@ -293,10 +237,9 @@ export function GraphViewModal({
       }
     }
   }, [
-    hasLoaded,
-    graphData,
+    layout,
+    filteredData,
     currentPageId,
-    depthFilter,
     searchQuery,
     hoveredNode,
     setNodes,
@@ -428,12 +371,27 @@ export function GraphViewModal({
       </div>
 
       {/* Graph Container */}
-      <div className="flex-1">
+      <div className="flex-1 relative">
+        {/* Progress indicator for Web Worker calculation */}
+        {isCalculating && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 px-4 py-2 bg-void-black/90 border border-warm-ivory/10 rounded-lg">
+            <div className="w-32 h-1.5 bg-warm-ivory/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-tech-olive transition-all duration-200"
+                style={{ width: `${Math.round(progress * 100)}%` }}
+              />
+            </div>
+            <span className="text-xs text-warm-ivory/60">
+              {Math.round(progress * 100)}%
+            </span>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-warm-ivory/40">Loading graph...</div>
           </div>
-        ) : nodes.length === 0 ? (
+        ) : nodes.length === 0 && !isCalculating ? (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <svg
               className="w-16 h-16 text-warm-ivory/20"

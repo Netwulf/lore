@@ -3,7 +3,7 @@
 **Epic:** E2 - Performance & Otimização
 **Priority:** P1
 **Estimate:** 3 hours
-**Status:** [ ] Not Started
+**Status:** [x] Completed
 
 ---
 
@@ -22,11 +22,11 @@ Atualmente o CommandPalette faz busca semântica (API call + embedding) a cada 3
 
 ## Acceptance Criteria
 
-- [ ] Busca local acontece imediatamente (client-side filter)
-- [ ] Busca semântica só após 1000ms sem digitar OU Enter
-- [ ] Indicador visual de "buscando semanticamente..."
-- [ ] Resultados locais aparecem primeiro, semânticos depois
-- [ ] Cancelar busca semântica ao continuar digitando
+- [x] Busca local acontece imediatamente (client-side filter)
+- [x] Busca semântica só após 1000ms sem digitar OU Enter
+- [x] Indicador visual de "buscando semanticamente..."
+- [x] Resultados locais aparecem primeiro, semânticos depois
+- [x] Cancelar busca semântica ao continuar digitando
 
 ## Technical Notes
 
@@ -100,10 +100,16 @@ Após 1s:   [query____]
 
 ## Files Changed
 
-- [ ] `apps/web/components/layout/CommandPalette.tsx`
+- [x] `apps/web/components/layout/CommandPalette.tsx`
 
 ---
 
 ## QA Results
 
-_To be filled after implementation_
+- ✅ Build passed
+- ✅ TypeScript typecheck passed
+- ✅ Debounce increased from 300ms to 1000ms
+- ✅ AbortController added to cancel pending requests
+- ✅ Enter key forces immediate search (flushSemanticSearch)
+- ✅ Visual indicator "Semantic search in 1s..." / "Searching semantically..."
+- ✅ Local results appear instantly, semantic results merge after

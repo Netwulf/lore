@@ -33,9 +33,11 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSemanticMode, setIsSemanticMode] = useState(false);
+  const [isPendingSemantic, setIsPendingSemantic] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const router = useRouter();
 
   // Local filter for instant results while semantic search is loading
@@ -70,13 +72,21 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
     [pages]
   );
 
-  // Debounced semantic search
+  // Debounced semantic search with abort support
   const performSemanticSearch = useCallback(async (searchQuery: string) => {
     if (searchQuery.length < 2) {
       setSearchResults([]);
       setIsSemanticMode(false);
       return;
     }
+
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
 
     setIsSearching(true);
 
@@ -85,6 +95,7 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: searchQuery }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (response.ok) {
@@ -93,6 +104,10 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
         setIsSemanticMode(data.isSemanticSearch || false);
       }
     } catch (error) {
+      // Ignore abort errors (expected when user continues typing)
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
       console.error('Search error:', error);
       // Keep local results on error
     } finally {
@@ -100,19 +115,29 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
     }
   }, []);
 
-  // Handle query change with debounce
+  // Handle query change with debounce (1s for semantic search)
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
+    // Cancel pending request when query changes
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     if (query.length >= 2) {
+      // Mark pending semantic search
+      setIsPendingSemantic(true);
+      // Local results are instant, semantic search is delayed
       searchTimeoutRef.current = setTimeout(() => {
+        setIsPendingSemantic(false);
         performSemanticSearch(query);
-      }, 300);
+      }, 1000); // 1 second delay for semantic search
     } else {
       setSearchResults([]);
       setIsSemanticMode(false);
+      setIsPendingSemantic(false);
     }
 
     return () => {
@@ -120,6 +145,17 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
         clearTimeout(searchTimeoutRef.current);
       }
     };
+  }, [query, performSemanticSearch]);
+
+  // Force immediate semantic search
+  const flushSemanticSearch = useCallback(() => {
+    if (query.length >= 2) {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      setIsPendingSemantic(false);
+      performSemanticSearch(query);
+    }
   }, [query, performSemanticSearch]);
 
   // Global keyboard shortcut to open
@@ -174,6 +210,9 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
         e.preventDefault();
         if (displayResults[selectedIndex]) {
           navigateToPage(displayResults[selectedIndex].id);
+        } else if (query.length >= 2 && !isSearching) {
+          // No result selected - force immediate semantic search
+          flushSemanticSearch();
         }
         break;
       case 'Escape':
@@ -196,6 +235,7 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
     setSelectedIndex(0);
     setSearchResults([]);
     setIsSemanticMode(false);
+    setIsPendingSemantic(false);
   };
 
   // Handle backdrop click
@@ -355,6 +395,34 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
                 </li>
               );
             })}
+            {/* Semantic search indicator */}
+            {(isPendingSemantic || isSearching) && query.length >= 2 && (
+              <li className="flex items-center gap-3 px-4 py-2.5 text-warm-ivory/50">
+                <span className="w-1.5 h-1.5 rounded-full bg-transparent" />
+                <svg
+                  className="w-4 h-4 text-tech-olive animate-spin flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <span className="text-sm">
+                  {isPendingSemantic ? 'Semantic search in 1s...' : 'Searching semantically...'}
+                </span>
+              </li>
+            )}
           </ul>
         ) : (
           <div className="px-4 py-8 text-center text-warm-ivory/40">
