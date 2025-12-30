@@ -7,6 +7,8 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { usePages, PageTreeNode } from '@/lib/hooks/usePages';
 import PageTreeItem from './PageTreeItem';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
+import { EmptyState, EmptyStateIcons } from '@/components/ui/EmptyState';
+import { PageTreeSkeleton } from '@/components/ui/Skeleton';
 
 export function PageTree() {
   const { tree, loading, createPage, updatePage, deletePage, movePage } = usePages();
@@ -79,11 +81,7 @@ export function PageTree() {
   };
 
   if (loading) {
-    return (
-      <div className="px-3 py-4 text-warm-ivory/40 text-sm">
-        Loading pages...
-      </div>
-    );
+    return <PageTreeSkeleton />;
   }
 
   const renderNode = (node: PageTreeNode, level: number = 0) => {
@@ -135,9 +133,15 @@ export function PageTree() {
             </div>
             <SortableContext items={tree.map(n => n.id)} strategy={verticalListSortingStrategy}>
               {tree.length === 0 ? (
-                <div className="px-3 py-8 text-center text-warm-ivory/30 text-sm">
-                  No pages yet
-                </div>
+                <EmptyState
+                  icon={EmptyStateIcons.page}
+                  title="No pages yet"
+                  description="Start building your knowledge base"
+                  action={{
+                    label: "Create your first page",
+                    onClick: () => handleCreatePage(),
+                  }}
+                />
               ) : (
                 tree.map(node => renderNode(node))
               )}

@@ -3,6 +3,7 @@
 /**
  * Tags Sidebar Section
  * Story: LORE-3.7 - AI Auto-Tagging
+ * Updated: E3-S3 - Empty states + E3-S4 - Loading skeletons
  *
  * Shows all user tags with counts in the sidebar
  */
@@ -10,6 +11,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTags, type Tag } from '@/lib/hooks/useTags';
+import { EmptyState, EmptyStateIcons } from '@/components/ui/EmptyState';
+import { TagsSkeleton } from '@/components/ui/Skeleton';
 
 interface TagsSidebarProps {
   selectedTagId?: string;
@@ -46,13 +49,14 @@ export function TagsSidebar({ selectedTagId, onTagSelect }: TagsSidebarProps) {
       {isExpanded && (
         <div className="mt-1 space-y-0.5">
           {loading ? (
-            <div className="px-3 py-2 text-sm text-warm-ivory/40">
-              Loading tags...
-            </div>
+            <TagsSkeleton />
           ) : tags.length === 0 ? (
-            <div className="px-3 py-2 text-sm text-warm-ivory/40">
-              No tags yet
-            </div>
+            <EmptyState
+              icon={EmptyStateIcons.tag}
+              title="No tags yet"
+              description="Add #tags to your pages to organize them"
+              size="sm"
+            />
           ) : (
             tags.map(tag => (
               <button

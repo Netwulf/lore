@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
+import { QueryProvider } from '@/lib/providers/QueryProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -36,7 +37,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} font-sans`}
       >
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
