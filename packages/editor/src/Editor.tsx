@@ -16,12 +16,25 @@ import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 
 import { WikiLink } from './WikiLink';
+import { AI_COMMANDS, filterAICommands, type AICommand } from './AICommands';
 
 // Page type for wiki links
 export interface WikiPage {
   id: string;
   title: string;
   parent_id?: string | null;
+}
+
+// AI Command handler callback type
+export interface AICommandHandler {
+  onImage?: () => void;
+  onAsk?: (context: string) => void;
+  onContinue?: (context: string) => void;
+  onSummarize?: (text: string) => void;
+  onExpand?: (text: string) => void;
+  onRewrite?: (text: string) => void;
+  onTranslate?: (text: string) => void;
+  onBrainstorm?: (context: string) => void;
 }
 
 export interface EditorProps {
@@ -31,6 +44,7 @@ export interface EditorProps {
   pages?: WikiPage[];
   onCreatePage?: (title: string) => Promise<WikiPage | null>;
   onImageCommand?: () => void; // Triggers when /image is typed
+  onAICommand?: (command: AICommand, context: { selection?: string; pageContent?: string }) => void;
 }
 
 // Schema with WikiLink inline content
@@ -106,34 +120,71 @@ function getWikiLinkMenuItems(
 
 /**
  * Get AI command menu items (triggered by /)
+ * LORE-5.1: Expanded to include all AI commands
  */
 function getAICommandMenuItems(
   editor: WikiEditor,
   query: string,
-  onImageCommand?: () => void
+  onImageCommand?: () => void,
+  onAICommand?: (command: AICommand, context: { selection?: string; pageContent?: string }) => void
 ): DefaultReactSuggestionItem[] {
-  const items: DefaultReactSuggestionItem[] = [];
+  // Get current selection if any
+  const getSelection = (): string => {
+    try {
+      const selection = editor.getSelectedText();
+      return selection || '';
+    } catch {
+      return '';
+    }
+  };
 
-  // Image generation command
-  if (onImageCommand) {
-    items.push({
-      title: 'Generate Image',
-      subtext: 'Create an AI-generated image',
-      onItemClick: () => {
+  // Get full page content as context
+  const getPageContent = (): string => {
+    try {
+      const blocks = editor.document;
+      return blocks
+        .map((block: any) => {
+          if (block.content) {
+            return block.content
+              .map((c: any) => c.text || '')
+              .filter(Boolean)
+              .join('');
+          }
+          return '';
+        })
+        .filter(Boolean)
+        .join('\n');
+    } catch {
+      return '';
+    }
+  };
+
+  // Filter commands by query
+  const filteredCommands = filterAICommands(query);
+
+  // Convert to menu items
+  const items: DefaultReactSuggestionItem[] = filteredCommands.map((cmd) => ({
+    title: `${cmd.icon} ${cmd.title}`,
+    subtext: cmd.description,
+    aliases: cmd.aliases,
+    onItemClick: () => {
+      const selection = getSelection();
+      const pageContent = getPageContent();
+
+      // Handle image command specially for backward compatibility
+      if (cmd.id === 'image' && onImageCommand) {
         onImageCommand();
-      },
-      aliases: ['image', 'ai-image', 'dalle', 'picture'],
-    });
-  }
+        return;
+      }
 
-  // Filter items based on query
-  return items.filter(
-    (item) =>
-      item.title.toLowerCase().includes(query.toLowerCase()) ||
-      item.aliases?.some((alias) =>
-        alias.toLowerCase().includes(query.toLowerCase())
-      )
-  );
+      // Call the general AI command handler
+      if (onAICommand) {
+        onAICommand(cmd, { selection, pageContent });
+      }
+    },
+  }));
+
+  return items;
 }
 
 export function Editor({
@@ -143,6 +194,7 @@ export function Editor({
   pages = [],
   onCreatePage,
   onImageCommand,
+  onAICommand,
 }: EditorProps) {
   const editor = useCreateBlockNote({
     schema,
@@ -184,19 +236,14 @@ export function Editor({
           }}
         />
 
-        {/* AI Commands menu - triggers on /ai */}
-        {onImageCommand && (
+        {/* AI Commands menu - triggers on /
+            LORE-5.1: Show all AI commands in the menu */}
+        {(onImageCommand || onAICommand) && (
           <SuggestionMenuController
             triggerCharacter="/"
             getItems={async (query) => {
-              // Only show AI commands when query starts with 'ai' or matches image-related terms
-              if (query.toLowerCase().startsWith('ai') ||
-                  query.toLowerCase().startsWith('image') ||
-                  query.toLowerCase().startsWith('img') ||
-                  query.toLowerCase().startsWith('gen')) {
-                return getAICommandMenuItems(editor, query, onImageCommand);
-              }
-              return [];
+              // Show all AI commands - filter by query
+              return getAICommandMenuItems(editor, query, onImageCommand, onAICommand);
             }}
           />
         )}

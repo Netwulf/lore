@@ -1,8 +1,19 @@
+/**
+ * Command Palette - Quick navigation via ⌘K
+ * Story: E5-S4 - Otimizar Semantic Search Debounce
+ *
+ * Changes:
+ * - Reduced debounce from 1000ms to 300ms
+ * - Improved AbortController cleanup
+ */
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Page } from '@lore/db';
+
+// E5-S4: Reduced from 1000ms to 300ms for faster feedback
+const SEMANTIC_DEBOUNCE_MS = 300;
 
 interface CommandPaletteProps {
   pages: Page[];
@@ -115,7 +126,7 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
     }
   }, []);
 
-  // Handle query change with debounce (1s for semantic search)
+  // E5-S4: Handle query change with reduced debounce (300ms)
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -124,6 +135,7 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
     // Cancel pending request when query changes
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
 
     if (query.length >= 2) {
@@ -133,7 +145,7 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
       searchTimeoutRef.current = setTimeout(() => {
         setIsPendingSemantic(false);
         performSemanticSearch(query);
-      }, 1000); // 1 second delay for semantic search
+      }, SEMANTIC_DEBOUNCE_MS);
     } else {
       setSearchResults([]);
       setIsSemanticMode(false);
@@ -146,6 +158,16 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
       }
     };
   }, [query, performSemanticSearch]);
+
+  // E5-S4: Cleanup AbortController on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   // Force immediate semantic search
   const flushSemanticSearch = useCallback(() => {
@@ -419,7 +441,7 @@ export default function CommandPalette({ pages }: CommandPaletteProps) {
                   />
                 </svg>
                 <span className="text-sm">
-                  {isPendingSemantic ? 'Semantic search in 1s...' : 'Searching semantically...'}
+                  {isPendingSemantic ? 'Searching with AI...' : 'Searching semantically...'}
                 </span>
               </li>
             )}

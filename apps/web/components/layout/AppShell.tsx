@@ -8,8 +8,11 @@ import Sidebar from './Sidebar';
 import CommandPalette from './CommandPalette';
 import { KeyboardShortcutsModal, useKeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import LogoutButton from '@/components/LogoutButton';
-import { usePages } from '@/lib/hooks/usePages';
+// LORE-4.4: Use React Query version for shared cache
+import { usePagesQuery } from '@/lib/hooks/usePagesQuery';
 import { useAIEnabled } from '@/lib/hooks/useAIEnabled';
+// LORE-5.3: Quick AI Modal
+import { QuickAIModal } from '@/components/ai/QuickAIModal';
 
 // Lazy load heavy components
 const GraphViewModal = dynamic(
@@ -45,7 +48,9 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [graphOpen, setGraphOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const { pages, createPage } = usePages();
+  // LORE-5.3: Quick AI Modal state
+  const [quickAIOpen, setQuickAIOpen] = useState(false);
+  const { pages, createPage } = usePagesQuery();
   const { enabled: aiEnabled } = useAIEnabled();
   const router = useRouter();
   const { isOpen: shortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsModal();
@@ -59,18 +64,35 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
     return newPage;
   }, [createPage, router]);
 
-  // Keyboard shortcut: ⌘N for new page
+  // Keyboard shortcuts: ⌘N for new page, ⌘J for Quick AI
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // ⌘N - New page
       if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
         e.preventDefault();
         handleCreatePage();
+      }
+      // LORE-5.3: ⌘J - Quick AI
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j' && aiEnabled) {
+        e.preventDefault();
+        setQuickAIOpen(true);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleCreatePage]);
+  }, [handleCreatePage, aiEnabled]);
+
+  // LORE-5.3: Handle Quick AI insert
+  const handleQuickAIInsert = useCallback((text: string) => {
+    // Insert at current cursor position using execCommand
+    document.execCommand('insertText', false, text);
+  }, []);
+
+  const handleQuickAIReplace = useCallback((text: string) => {
+    // Replace selection with new text
+    document.execCommand('insertText', false, text);
+  }, []);
 
   return (
     <div className="flex h-screen bg-void-black overflow-hidden">
@@ -203,6 +225,16 @@ export default function AppShell({ children, userEmail }: AppShellProps) {
 
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal isOpen={shortcutsOpen} onClose={closeShortcuts} />
+
+      {/* LORE-5.3: Quick AI Modal (⌘J) */}
+      {aiEnabled && (
+        <QuickAIModal
+          isOpen={quickAIOpen}
+          onClose={() => setQuickAIOpen(false)}
+          onInsert={handleQuickAIInsert}
+          onReplace={handleQuickAIReplace}
+        />
+      )}
     </div>
   );
 }

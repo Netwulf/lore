@@ -1,17 +1,24 @@
+/**
+ * Page Tree
+ * Story: E5-S3 - Memoize Tree Building + React.memo
+ *
+ * Uses memoized tree from usePagesQuery and stable callbacks
+ */
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { usePages, PageTreeNode } from '@/lib/hooks/usePages';
+// LORE-4.4: Use React Query version for shared cache
+import { usePagesQuery, PageTreeNode } from '@/lib/hooks/usePagesQuery';
 import PageTreeItem from './PageTreeItem';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
 import { EmptyState, EmptyStateIcons } from '@/components/ui/EmptyState';
 import { PageTreeSkeleton } from '@/components/ui/Skeleton';
 
 export function PageTree() {
-  const { tree, loading, createPage, updatePage, deletePage, movePage } = usePages();
+  const { tree, loading, createPage, updatePage, deletePage, movePage } = usePagesQuery();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('lore-expanded-pages');
@@ -31,7 +38,8 @@ export function PageTree() {
   // Get current page ID from pathname
   const currentPageId = pathname?.startsWith('/page/') ? pathname.split('/')[2] : null;
 
-  const toggleExpand = (id: string) => {
+  // E5-S3: Stable callbacks for React.memo optimization
+  const toggleExpand = useCallback((id: string) => {
     setExpandedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -41,7 +49,7 @@ export function PageTree() {
       }
       return next;
     });
-  };
+  }, []);
 
   const handleCreatePage = async (parentId?: string) => {
     const newPage = await createPage(parentId);

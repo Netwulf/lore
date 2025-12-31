@@ -1,9 +1,14 @@
+/**
+ * Backlinks Panel
+ * Story: E5-S2 - Fix BacklinksPanel N+1 Query
+ *
+ * Uses server-side RPC to avoid fetching full content for each backlink
+ */
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import type { PartialBlock } from '@blocknote/core';
 
 interface Backlink {
   pageId: string;
@@ -16,109 +21,58 @@ interface BacklinksPanelProps {
   pageTitle: string;
 }
 
-/**
- * Extract context around a wiki link in BlockNote content
- */
-function extractContext(
-  content: PartialBlock[],
-  targetPageId: string,
-  targetPageTitle: string
-): string {
-  let context = '';
-
-  const traverse = (node: any): boolean => {
-    // Check if this is a wikiLink to the target page
-    if (node.type === 'wikiLink' && node.props?.pageId === targetPageId) {
-      // Found the link, but we need to get surrounding text
-      return true;
-    }
-
-    // For text nodes, accumulate
-    if (node.type === 'text' && node.text) {
-      context += node.text + ' ';
-    }
-
-    // Traverse content array
-    if (node.content && Array.isArray(node.content)) {
-      for (const child of node.content) {
-        if (traverse(child)) {
-          // Found the link in this branch
-          return true;
-        }
-      }
-    }
-
-    // Traverse children array
-    if (node.children && Array.isArray(node.children)) {
-      for (const child of node.children) {
-        if (traverse(child)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  };
-
-  // Traverse all blocks
-  for (const block of content) {
-    context = '';
-    if (traverse(block)) {
-      // Found the link in this block, return the context
-      const trimmed = context.trim();
-      if (trimmed.length > 100) {
-        return `...${trimmed.slice(0, 100)}...`;
-      }
-      return trimmed || `Contains link to [[${targetPageTitle}]]`;
-    }
-  }
-
-  return `Links to [[${targetPageTitle}]]`;
-}
-
 export function BacklinksPanel({ pageId, pageTitle }: BacklinksPanelProps) {
   const [backlinks, setBacklinks] = useState<Backlink[]>([]);
   const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  // E5-S2: Memoize supabase client
+  const supabase = useMemo(() => createClient(), []);
 
-  // Fetch backlinks
+  // E5-S2: Use RPC for optimized query
   const fetchBacklinks = useCallback(async () => {
     setLoading(true);
     try {
-      // Query page_links with source page details
+      // Try RPC first (after migration is applied)
       const { data, error } = await supabase
-        .from('page_links')
-        .select(
-          `
-          source_id,
-          pages!page_links_source_id_fkey (
-            id,
-            title,
-            content
-          )
-        `
-        )
-        .eq('target_id', pageId);
+        .rpc('get_backlinks_with_context', { p_page_id: pageId });
 
       if (error) {
-        console.error('Error fetching backlinks:', error);
-        setBacklinks([]);
+        // Fallback to direct query if RPC not available
+        console.warn('RPC not available, using fallback:', error.message);
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('page_links')
+          .select(`
+            source_id,
+            pages!page_links_source_id_fkey (
+              id,
+              title
+            )
+          `)
+          .eq('target_id', pageId);
+
+        if (fallbackError) {
+          console.error('Error fetching backlinks:', fallbackError);
+          setBacklinks([]);
+          return;
+        }
+
+        const links: Backlink[] = fallbackData?.map((link: any) => ({
+          pageId: link.pages.id,
+          pageTitle: link.pages.title,
+          context: `Links to [[${pageTitle}]]`,
+        })) || [];
+
+        setBacklinks(links);
         return;
       }
 
-      // Transform data with context extraction
-      const links: Backlink[] =
-        data?.map((link: any) => ({
-          pageId: link.pages.id,
-          pageTitle: link.pages.title,
-          context: extractContext(
-            link.pages.content || [],
-            pageId,
-            pageTitle
-          ),
-        })) || [];
+      // Transform RPC response
+      const links: Backlink[] = data?.map((link: any) => ({
+        pageId: link.source_id,
+        pageTitle: link.source_title,
+        context: link.context_preview || `Links to [[${pageTitle}]]`,
+      })) || [];
 
       setBacklinks(links);
     } catch (err) {

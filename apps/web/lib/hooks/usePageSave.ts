@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { createClient } from '@/lib/supabase/client';
 import { useLinks } from '@/lib/hooks/useLinks';
@@ -37,7 +37,8 @@ export function usePageSave({
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [userId, setUserId] = useState<string | null>(null);
 
-  const supabase = createClient();
+  // LORE-4.1: Memoize supabase client to prevent recreation on every render
+  const supabase = useMemo(() => createClient(), []);
   const { syncLinks } = useLinks();
 
   // Get current user ID for link syncing

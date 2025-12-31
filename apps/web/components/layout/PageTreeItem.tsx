@@ -1,6 +1,12 @@
+/**
+ * Page Tree Item
+ * Story: E5-S3 - Memoize Tree Building + React.memo
+ *
+ * Uses React.memo with custom comparison to prevent unnecessary re-renders
+ */
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Page } from '@lore/db';
@@ -18,7 +24,7 @@ interface PageTreeItemProps {
   onDelete: () => void;
 }
 
-export function PageTreeItem({
+function PageTreeItemComponent({
   page,
   level,
   isActive,
@@ -214,5 +220,17 @@ export function PageTreeItem({
     </div>
   );
 }
+
+// E5-S3: React.memo with custom comparison to prevent unnecessary re-renders
+export const PageTreeItem = memo(PageTreeItemComponent, (prev, next) => {
+  return (
+    prev.page.id === next.page.id &&
+    prev.page.title === next.page.title &&
+    prev.level === next.level &&
+    prev.isActive === next.isActive &&
+    prev.isExpanded === next.isExpanded &&
+    prev.hasChildren === next.hasChildren
+  );
+});
 
 export default PageTreeItem;

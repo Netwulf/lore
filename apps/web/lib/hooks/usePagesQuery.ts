@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Page } from '@lore/db';
 
@@ -30,10 +30,11 @@ export const pageKeys = {
  * - Shared cache across components
  */
 export function usePagesQuery() {
-  const supabase = createClient();
+  // LORE-4.1: Memoize supabase client to prevent recreation on every render
+  const supabase = useMemo(() => createClient(), []);
   const queryClient = useQueryClient();
 
-  // Fetch all pages
+  // Fetch all pages with optimized caching
   const {
     data: pages = [],
     isLoading: loading,
@@ -54,7 +55,29 @@ export function usePagesQuery() {
       if (error) throw error;
       return (data as Page[]) || [];
     },
+    // LORE-4.4: Add caching configuration
+    staleTime: 30000, // 30 seconds - data considered fresh
+    gcTime: 5 * 60 * 1000, // 5 minutes - keep in cache after unmount
   });
+
+  // LORE-4.4: Supabase realtime subscription for cross-tab sync
+  useEffect(() => {
+    const channel = supabase
+      .channel('pages-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pages' },
+        () => {
+          // Invalidate cache on any remote change
+          queryClient.invalidateQueries({ queryKey: pageKeys.lists() });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, queryClient]);
 
   // Build tree structure
   const buildTree = useCallback((pages: Page[]): PageTreeNode[] => {
@@ -200,9 +223,12 @@ export function usePagesQuery() {
     return updatePage(pageId, { parent_id: newParentId });
   };
 
+  // LORE-4.2: Memoize tree to prevent O(n) recalculation on every render
+  const tree = useMemo(() => buildTree(pages), [buildTree, pages]);
+
   return {
     pages,
-    tree: buildTree(pages),
+    tree,
     loading,
     error: error as Error | null,
     createPage,
@@ -217,4 +243,6 @@ export function usePagesQuery() {
   };
 }
 
+// E5-S1: Backward compatible alias
+export { usePagesQuery as usePages };
 export default usePagesQuery;
