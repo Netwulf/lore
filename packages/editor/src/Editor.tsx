@@ -11,12 +11,13 @@ import {
   useCreateBlockNote,
   DefaultReactSuggestionItem,
   SuggestionMenuController,
+  getDefaultReactSlashMenuItems,
 } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 
 import { WikiLink } from './WikiLink';
-import { AI_COMMANDS, filterAICommands, type AICommand } from './AICommands';
+import { AI_COMMANDS, type AICommand } from './AICommands';
 
 // Page type for wiki links
 export interface WikiPage {
@@ -119,72 +120,80 @@ function getWikiLinkMenuItems(
 }
 
 /**
- * Get AI command menu items (triggered by /)
- * LORE-5.1: Expanded to include all AI commands
+ * Get all slash menu items: BlockNote defaults + AI commands
+ * E6-S1: Restored default BlockNote commands, AI commands in separate group
  */
-function getAICommandMenuItems(
+function getSlashMenuItems(
   editor: WikiEditor,
-  query: string,
   onImageCommand?: () => void,
   onAICommand?: (command: AICommand, context: { selection?: string; pageContent?: string }) => void
 ): DefaultReactSuggestionItem[] {
-  // Get current selection if any
-  const getSelection = (): string => {
-    try {
-      const selection = editor.getSelectedText();
-      return selection || '';
-    } catch {
-      return '';
-    }
-  };
+  // 1. Get default BlockNote slash menu items (always available)
+  const defaultItems = getDefaultReactSlashMenuItems(editor as any);
 
-  // Get full page content as context
-  const getPageContent = (): string => {
-    try {
-      const blocks = editor.document;
-      return blocks
-        .map((block: any) => {
-          if (block.content) {
-            return block.content
-              .map((c: any) => c.text || '')
-              .filter(Boolean)
-              .join('');
+  // 2. Get AI command items (only if handlers provided)
+  const aiItems: DefaultReactSuggestionItem[] = [];
+
+  if (onImageCommand || onAICommand) {
+    // Get current selection if any
+    const getSelection = (): string => {
+      try {
+        const selection = editor.getSelectedText();
+        return selection || '';
+      } catch {
+        return '';
+      }
+    };
+
+    // Get full page content as context
+    const getPageContent = (): string => {
+      try {
+        const blocks = editor.document;
+        return blocks
+          .map((block: any) => {
+            if (block.content) {
+              return block.content
+                .map((c: any) => c.text || '')
+                .filter(Boolean)
+                .join('');
+            }
+            return '';
+          })
+          .filter(Boolean)
+          .join('\n');
+      } catch {
+        return '';
+      }
+    };
+
+    // Convert AI commands to menu items with "AI" group
+    AI_COMMANDS.forEach((cmd) => {
+      aiItems.push({
+        title: `${cmd.icon} ${cmd.title}`,
+        subtext: cmd.description,
+        aliases: cmd.aliases,
+        group: 'AI', // Separate group for visual distinction
+        onItemClick: () => {
+          const selection = getSelection();
+          const pageContent = getPageContent();
+
+          // Handle image command specially for backward compatibility
+          if (cmd.id === 'image' && onImageCommand) {
+            onImageCommand();
+            return;
           }
-          return '';
-        })
-        .filter(Boolean)
-        .join('\n');
-    } catch {
-      return '';
-    }
-  };
 
-  // Filter commands by query
-  const filteredCommands = filterAICommands(query);
+          // Call the general AI command handler
+          if (onAICommand) {
+            onAICommand(cmd, { selection, pageContent });
+          }
+        },
+      });
+    });
+  }
 
-  // Convert to menu items
-  const items: DefaultReactSuggestionItem[] = filteredCommands.map((cmd) => ({
-    title: `${cmd.icon} ${cmd.title}`,
-    subtext: cmd.description,
-    aliases: cmd.aliases,
-    onItemClick: () => {
-      const selection = getSelection();
-      const pageContent = getPageContent();
-
-      // Handle image command specially for backward compatibility
-      if (cmd.id === 'image' && onImageCommand) {
-        onImageCommand();
-        return;
-      }
-
-      // Call the general AI command handler
-      if (onAICommand) {
-        onAICommand(cmd, { selection, pageContent });
-      }
-    },
-  }));
-
-  return items;
+  // 3. Combine: defaults first, then AI commands
+  return [...defaultItems, ...aiItems];
 }
 
 export function Editor({
@@ -221,6 +230,7 @@ export function Editor({
         editor={editor}
         editable={editable}
         theme="dark"
+        slashMenu={false}
         data-theming-css-variables-demo
       >
         {/* Wiki Link suggestion menu - triggers on [ */}
@@ -236,17 +246,17 @@ export function Editor({
           }}
         />
 
-        {/* AI Commands menu - triggers on /
-            LORE-5.1: Show all AI commands in the menu */}
-        {(onImageCommand || onAICommand) && (
-          <SuggestionMenuController
-            triggerCharacter="/"
-            getItems={async (query) => {
-              // Show all AI commands - filter by query
-              return getAICommandMenuItems(editor, query, onImageCommand, onAICommand);
-            }}
-          />
-        )}
+        {/* Slash menu - BlockNote defaults + AI commands
+            E6-S1: Always show menu, works with or without AI enabled */}
+        <SuggestionMenuController
+          triggerCharacter="/"
+          getItems={async (query) =>
+            filterSuggestionItems(
+              getSlashMenuItems(editor, onImageCommand, onAICommand),
+              query
+            )
+          }
+        />
       </BlockNoteView>
       <style jsx global>{`
         .lore-editor {

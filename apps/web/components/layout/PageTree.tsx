@@ -1,14 +1,22 @@
 /**
  * Page Tree
  * Story: E5-S3 - Memoize Tree Building + React.memo
- *
- * Uses memoized tree from usePagesQuery and stable callbacks
+ * Story: E6-S3 - Fix click navigation with DndKit activationConstraint
+ * Story: E6-S4 - Optimize callbacks with stable references
  */
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import {
+  DndContext,
+  closestCenter,
+  DragEndEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 // LORE-4.4: Use React Query version for shared cache
 import { usePagesQuery, PageTreeNode } from '@/lib/hooks/usePagesQuery';
@@ -30,16 +38,36 @@ export function PageTree() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Save expanded state to localStorage
+  // E6-S3: Sensors with activationConstraint to differentiate click vs drag
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      // Require 10px movement before starting drag
+      activationConstraint: {
+        distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      // Require 10px movement or 250ms delay for touch
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    })
+  );
+
+  // E6-S4: Debounce localStorage sync to avoid excessive writes
   useEffect(() => {
-    localStorage.setItem('lore-expanded-pages', JSON.stringify(Array.from(expandedIds)));
+    const timer = setTimeout(() => {
+      localStorage.setItem('lore-expanded-pages', JSON.stringify(Array.from(expandedIds)));
+    }, 300);
+    return () => clearTimeout(timer);
   }, [expandedIds]);
 
   // Get current page ID from pathname
   const currentPageId = pathname?.startsWith('/page/') ? pathname.split('/')[2] : null;
 
-  // E5-S3: Stable callbacks for React.memo optimization
-  const toggleExpand = useCallback((id: string) => {
+  // E6-S4: Stable callbacks that receive ID as parameter
+  const handleToggle = useCallback((id: string) => {
     setExpandedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -51,21 +79,34 @@ export function PageTree() {
     });
   }, []);
 
-  const handleCreatePage = async (parentId?: string) => {
+  const handleSelect = useCallback((id: string) => {
+    router.push(`/page/${id}`);
+  }, [router]);
+
+  const handleCreateSubpage = useCallback(async (parentId: string) => {
     const newPage = await createPage(parentId);
     if (newPage) {
-      if (parentId) {
-        setExpandedIds(prev => new Set(Array.from(prev).concat(parentId)));
-      }
+      setExpandedIds(prev => new Set(Array.from(prev).concat(parentId)));
       router.push(`/page/${newPage.id}`);
     }
-  };
+  }, [createPage, router]);
 
-  const handleRename = async (id: string, newTitle: string) => {
+  const handleCreateRootPage = useCallback(async () => {
+    const newPage = await createPage();
+    if (newPage) {
+      router.push(`/page/${newPage.id}`);
+    }
+  }, [createPage, router]);
+
+  const handleRename = useCallback(async (id: string, newTitle: string) => {
     await updatePage(id, { title: newTitle });
-  };
+  }, [updatePage]);
 
-  const handleDelete = async () => {
+  const handleRequestDelete = useCallback((node: PageTreeNode) => {
+    setDeleteTarget(node);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
     if (deleteTarget) {
       const success = await deletePage(deleteTarget.id);
       if (success && currentPageId === deleteTarget.id) {
@@ -73,20 +114,21 @@ export function PageTree() {
       }
       setDeleteTarget(null);
     }
-  };
+  }, [deleteTarget, deletePage, currentPageId, router]);
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleCancelDelete = useCallback(() => {
+    setDeleteTarget(null);
+  }, []);
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    // For now, simple move to root or under another page
-    // TODO: Implement proper reordering
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // If dropped on a page, make it a child
     await movePage(activeId, overId);
-  };
+  }, [movePage]);
 
   if (loading) {
     return <PageTreeSkeleton />;
@@ -104,11 +146,11 @@ export function PageTree() {
           isActive={currentPageId === node.id}
           isExpanded={isExpanded}
           hasChildren={hasChildren}
-          onToggle={() => toggleExpand(node.id)}
-          onSelect={() => router.push(`/page/${node.id}`)}
-          onCreateSubpage={() => handleCreatePage(node.id)}
-          onRename={(newTitle) => handleRename(node.id, newTitle)}
-          onDelete={() => setDeleteTarget(node)}
+          onToggle={handleToggle}
+          onSelect={handleSelect}
+          onCreateSubpage={handleCreateSubpage}
+          onRename={handleRename}
+          onDelete={handleRequestDelete}
         />
         {isExpanded && hasChildren && (
           <div>
@@ -121,11 +163,15 @@ export function PageTree() {
 
   return (
     <>
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
         <div className="flex-1 overflow-y-auto">
           {/* New Page Button */}
           <button
-            onClick={() => handleCreatePage()}
+            onClick={handleCreateRootPage}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-warm-ivory/60 hover:text-warm-ivory hover:bg-warm-ivory/5 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -147,7 +193,7 @@ export function PageTree() {
                   description="Start building your knowledge base"
                   action={{
                     label: "Create your first page",
-                    onClick: () => handleCreatePage(),
+                    onClick: handleCreateRootPage,
                   }}
                 />
               ) : (
@@ -163,8 +209,8 @@ export function PageTree() {
         isOpen={!!deleteTarget}
         title={deleteTarget?.title || ''}
         hasChildren={(deleteTarget?.children.length || 0) > 0}
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
       />
     </>
   );

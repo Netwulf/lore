@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export interface GraphNode {
@@ -18,36 +18,38 @@ export interface GraphData {
   edges: GraphEdge[];
 }
 
+/**
+ * useGraph hook for fetching graph visualization data
+ * E6-S2: Fixed race condition by fetching userId inline instead of depending on state
+ */
 export function useGraph() {
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  // Get user ID on mount
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id);
-    });
-  }, [supabase]);
 
   /**
    * Fetch all pages and links for the graph visualization
+   * E6-S2: Now fetches user inline to avoid race condition with auth state
    */
   const fetchGraphData = useCallback(async (): Promise<GraphData> => {
-    if (!userId) return { nodes: [], edges: [] };
-
     setLoading(true);
     try {
+      // E6-S2: Fetch userId inline instead of depending on state
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('No authenticated user for graph');
+        return { nodes: [], edges: [] };
+      }
+
       const [pagesRes, linksRes] = await Promise.all([
         supabase
           .from('pages')
           .select('id, title')
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .order('created_at', { ascending: true }),
         supabase
           .from('page_links')
           .select('source_id, target_id')
-          .eq('user_id', userId),
+          .eq('user_id', user.id),
       ]);
 
       const nodes: GraphNode[] =
@@ -69,12 +71,11 @@ export function useGraph() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, userId]);
+  }, [supabase]);
 
   return {
     fetchGraphData,
     loading,
-    userId,
   };
 }
 

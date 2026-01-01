@@ -1,8 +1,7 @@
 /**
  * Page Tree Item
  * Story: E5-S3 - Memoize Tree Building + React.memo
- *
- * Uses React.memo with custom comparison to prevent unnecessary re-renders
+ * Story: E6-S4 - Stable callbacks that receive ID as parameter
  */
 'use client';
 
@@ -10,18 +9,20 @@ import { useState, useRef, useEffect, memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Page } from '@lore/db';
+import type { PageTreeNode } from '@/lib/hooks/usePagesQuery';
 
+// E6-S4: Props now receive stable callbacks that take ID
 interface PageTreeItemProps {
-  page: Page;
+  page: Page | PageTreeNode;
   level: number;
   isActive: boolean;
   isExpanded: boolean;
   hasChildren: boolean;
-  onToggle: () => void;
-  onSelect: () => void;
-  onCreateSubpage: () => void;
-  onRename: (newTitle: string) => void;
-  onDelete: () => void;
+  onToggle: (id: string) => void;
+  onSelect: (id: string) => void;
+  onCreateSubpage: (id: string) => void;
+  onRename: (id: string, newTitle: string) => void;
+  onDelete: (node: PageTreeNode) => void;
 }
 
 function PageTreeItemComponent({
@@ -85,7 +86,7 @@ function PageTreeItemComponent({
 
   const handleSaveTitle = () => {
     if (editTitle.trim() && editTitle !== page.title) {
-      onRename(editTitle.trim());
+      onRename(page.id, editTitle.trim());
     } else {
       setEditTitle(page.title);
     }
@@ -107,6 +108,21 @@ function PageTreeItemComponent({
     setShowContextMenu(true);
   };
 
+  // E6-S4: Click handlers now pass ID to stable callbacks
+  const handleClick = () => {
+    onSelect(page.id);
+  };
+
+  const handleToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggle(page.id);
+  };
+
+  const handleCreateSubpageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCreateSubpage(page.id);
+  };
+
   return (
     <div ref={itemRef}>
       <div
@@ -117,7 +133,7 @@ function PageTreeItemComponent({
           ${isActive ? 'bg-warm-ivory/10 text-warm-ivory' : 'text-warm-ivory/60 hover:text-warm-ivory hover:bg-warm-ivory/5'}
           transition-colors
         `}
-        onClick={onSelect}
+        onClick={handleClick}
         onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
         {...attributes}
@@ -125,10 +141,7 @@ function PageTreeItemComponent({
       >
         {/* Expand/Collapse */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle();
-          }}
+          onClick={handleToggleClick}
           className={`w-4 h-4 flex items-center justify-center transition-transform ${
             hasChildren ? 'visible' : 'invisible'
           }`}
@@ -167,10 +180,7 @@ function PageTreeItemComponent({
         {/* Actions (visible on hover) */}
         <div className="hidden group-hover:flex items-center gap-1">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onCreateSubpage();
-            }}
+            onClick={handleCreateSubpageClick}
             className="w-5 h-5 flex items-center justify-center text-warm-ivory/40 hover:text-warm-ivory"
             title="Add subpage"
           >
@@ -198,7 +208,7 @@ function PageTreeItemComponent({
           </button>
           <button
             onClick={() => {
-              onCreateSubpage();
+              onCreateSubpage(page.id);
               setShowContextMenu(false);
             }}
             className="w-full px-3 py-1.5 text-sm text-warm-ivory/80 hover:bg-warm-ivory/10 text-left"
@@ -208,7 +218,7 @@ function PageTreeItemComponent({
           <div className="border-t border-warm-ivory/10 my-1" />
           <button
             onClick={() => {
-              onDelete();
+              onDelete(page as PageTreeNode);
               setShowContextMenu(false);
             }}
             className="w-full px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10 text-left"
@@ -222,6 +232,7 @@ function PageTreeItemComponent({
 }
 
 // E5-S3: React.memo with custom comparison to prevent unnecessary re-renders
+// E6-S4: Callbacks are now stable, so we don't need to compare them
 export const PageTreeItem = memo(PageTreeItemComponent, (prev, next) => {
   return (
     prev.page.id === next.page.id &&
