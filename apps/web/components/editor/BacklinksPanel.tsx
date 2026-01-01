@@ -21,6 +21,13 @@ interface BacklinksPanelProps {
   pageTitle: string;
 }
 
+// RPC response type
+interface BacklinkRPCResult {
+  source_id: string;
+  source_title: string;
+  context_preview: string | null;
+}
+
 export function BacklinksPanel({ pageId, pageTitle }: BacklinksPanelProps) {
   const [backlinks, setBacklinks] = useState<Backlink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +42,8 @@ export function BacklinksPanel({ pageId, pageTitle }: BacklinksPanelProps) {
     try {
       // Try RPC first (after migration is applied)
       const { data, error } = await supabase
-        .rpc('get_backlinks_with_context', { p_page_id: pageId });
+        // @ts-expect-error - RPC function exists in DB but not in generated types yet
+        .rpc('get_backlinks_with_context', { p_page_id: pageId }) as { data: BacklinkRPCResult[] | null; error: any };
 
       if (error) {
         // Fallback to direct query if RPC not available
@@ -68,7 +76,7 @@ export function BacklinksPanel({ pageId, pageTitle }: BacklinksPanelProps) {
       }
 
       // Transform RPC response
-      const links: Backlink[] = data?.map((link: any) => ({
+      const links: Backlink[] = data?.map((link) => ({
         pageId: link.source_id,
         pageTitle: link.source_title,
         context: link.context_preview || `Links to [[${pageTitle}]]`,
